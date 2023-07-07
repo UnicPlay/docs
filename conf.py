@@ -19,6 +19,8 @@ source_suffix = {
 }
 html_static_path = ['_static_local']
 html_style = 'css/custom.css'
-
+html_js_files = [
+    'js/custom.js'
+]
 
 root_doc="service.index"
