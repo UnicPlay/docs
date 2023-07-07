@@ -1,0 +1,12 @@
+sphinx
+esbonio
+docutils
+rstcheck
+myst-parser
+sphinx-rtd-theme
+sphinx-tabs
+sphinx-copybutton
+sphinxcontrib.plantuml
+sphinx_togglebutton
+breathe
+ 

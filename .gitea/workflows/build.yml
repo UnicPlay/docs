@@ -1,0 +1,45 @@
+name: building Sphinx
+run-name: ${{ gitea.actor }} is building Sphinx docs
+on: [push]
+
+jobs:
+  buildDocs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the branch
+        uses: actions/checkout@v3 
+      - name: Prepare working environment
+        run: | 
+          apt-get update
+          apt-get install -qy curl pip
+          pip install -r ${{ gitea.workspace }}/requirements.txt                    
+
+      - name: Send a POST request to local webhook
+        run: >
+          BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/}) &&
+          curl -X POST 
+          -H "State: starting"
+          http://webhook:8000/webhook/message/${BRANCH_NAME}                      
+        shell: bash            
+      - name: Launch build script
+        run: |
+          chmod +x build.sh
+          ./build.sh                    
+        shell: bash
+      - name: Archive built docs
+        run: >
+          BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/}) &&
+          cd _build && tar -cvf ${BRANCH_NAME}.tar html
+      - name: Upload them as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${BRANCH_NAME}.tar
+          path: /_build/${BRANCH_NAME}.tar
+      - name: Send them to webhook host
+        run: >
+          BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/}) &&
+          curl -X POST 
+          -H "Download: true" 
+          -F "file=@_build/${BRANCH_NAME}.tar" 
+          http://webhook:8000/webhook/download/${BRANCH_NAME}      
+        shell: bash
